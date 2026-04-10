@@ -35,7 +35,14 @@ app.post("/ussd", async (req, res) => {
     const { const { text = "", phoneNumber } = req.body;
 
     let response = "";
+let user = await User.findOne({ phoneNumber });
 
+if (!user) {
+    user = await User.create({
+        phoneNumber,
+        balance: 1000
+    });
+}
     // MAIN MENU
     if (text === "") {
         response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Support";
@@ -52,6 +59,17 @@ app.post("/ussd", async (req, res) => {
         response = "END User not found";
     } else {
         response = `END Your balance is ₦${user.balance}`;
+}if (text === "") {
+    response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Support";
+}
+
+else if (text === "1") {
+    response = "CON My Account\n1. Check Balance\n2. Wallet Info";
+}
+
+// 👇 PUT IT RIGHT HERE
+else if (text === "1*1") {
+    response = `END Your balance is ₦${user.balance}`;
 }
     }
     else if (text === "1*2") {
