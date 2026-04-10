@@ -27,3 +27,12 @@ A scalable and production-ready USSD platform designed for telecom and fintech s
 ---
 
 ## 📂 Project Structure
+---
+
+## ⚙️ Installation
+
+```bash
+git clone https://github.com/yourusername/ussd-platform.git
+cd ussd-platform
+npm install
+npm start
