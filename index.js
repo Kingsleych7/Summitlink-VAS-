@@ -27,11 +27,17 @@ app.get("/", (req, res) => {
 // 6. USSD ROUTE (FIXED LOGIC GOES HERE)
 app.post("/ussd", async (req, res) => {
     const { text = "", phoneNumber } = req.body;
+app.post("/ussd", async (req, res) => {
 
+    console.log(req.body); // 👈 ADD THIS LINE
+
+    const { text = "", phoneNumber } = req.body;
     let response = "";
 
     let user = await User.findOne({ phoneNumber });
+text = text.trim(); // 👈 IMPORTANT FIX
 
+    let response = "";
     if (!user) {
         user = await User.create({
             phoneNumber,
@@ -42,8 +48,8 @@ app.post("/ussd", async (req, res) => {
     if (text === "") {
         response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Support";
     }
-
-    else if (text === "1*1") {
+text = text.trim();
+     if (text.trim() === "1*1") {
         response = `END Your balance is ₦${user.balance}`;
     }
 
