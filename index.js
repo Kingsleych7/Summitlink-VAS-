@@ -106,7 +106,7 @@ app.post("/ussd", async (req, res) => {
 
         // SUPPORT
         else if (text === "3") {
-           response = "END To fund wallet, visit: https://paystack.com/pay/summitlink";
+              response = "END Fund your wallet here: https://paystack.shop/pay/summitlink-wallet-ng";
 }
         else {
             response = "END Invalid input";
