@@ -11,8 +11,8 @@ mongoose.connect("mongodb+srv://Summitlink:summit9876@summitlinkcluster.t4qvdqt.
 
 // 👤 USER MODEL
 const UserSchema = new mongoose.Schema({
-    phoneNumber: String,
-    email: string,
+    phoneNumber: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     balance: { type: Number, default: 1000 }
 });
 const User = mongoose.model("User", UserSchema);
@@ -68,7 +68,10 @@ app.post("/paystack-webhook", express.json(), async (req, res) => {
 });
         // MAIN MENU
         if (text === "") {
-    response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Fund Wallet\n4. Support";
+    response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Fund Wallet\n4. Register";
+}
+    else if (text === "4") {
+    response = "CON Enter your email address";
 }
         // ACCOUNT
         else if (text === "1") {
@@ -78,7 +81,25 @@ app.post("/paystack-webhook", express.json(), async (req, res) => {
         else if (text === "1*1") {
             response = `END Your balance is ₦${user.balance}`;
         }
+      else if (text.startsWith("4*")) {
 
+    const email = text.split("*")[1];
+
+    let user = await User.findOne({ phoneNumber });
+
+    if (!user) {
+        user = await User.create({
+            phoneNumber,
+            email,
+            balance: 1000
+        });
+    } else {
+        user.email = email;
+        await user.save();
+    }
+
+    response = "END Registration successful";
+}
         // DATA MENU
         else if (text === "2") {
             response =
