@@ -166,7 +166,7 @@ app.post("/paystack-webhook", express.json(), async (req, res) => {
         res.send(response);
 
     } catch (error) {
-        console.log(error);
+        console.log("USSD ERROR:", err);
         res.send("END System error");
     }
 });
