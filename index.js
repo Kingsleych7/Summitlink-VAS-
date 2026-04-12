@@ -6,9 +6,12 @@ app.use(express.urlencoded({ extended: false }));
 
 // 🔗 CONNECT MONGODB
 mongoose.connect("mongodb+srv://Summitlink:summit9876@summitlinkcluster.t4qvdqt.mongodb.net/?retryWrites=true&w=majority")
-.then(() => console.log("MongoDB connected"))
-.catch(err => console.log(err));
-
+.then(() => {
+    console.log("MongoDB Connected Successfully 🚀");
+})
+.catch((err) => {
+    console.log("MongoDB Connection Error:", err);
+});
 // 👤 USER MODEL
 const UserSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
