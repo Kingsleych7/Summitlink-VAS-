@@ -8,7 +8,6 @@ app.use(express.urlencoded({ extended: false }));
 mongoose.connect("mongodb+srv://SummitlinkDB:SummitLink_DB2026@cluster0.xt2kxhu.mongodb.net/summitlinkDB?retryWrites=true&w=majority")
 .then(() => console.log("MongoDB connected"))
 .catch(err => console.log("DB ERROR:", err)); 
-});
 
 // 👤 USER MODEL
 const UserSchema = new mongoose.Schema({
