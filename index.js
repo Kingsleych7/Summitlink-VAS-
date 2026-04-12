@@ -5,13 +5,11 @@ const mongoose = require("mongoose");
 app.use(express.urlencoded({ extended: false }));
 
 // 🔗 CONNECT MONGODB
-mongoose.connect("mongodb+srv://Summitlink:summit9876@summitlinkcluster.t4qvdqt.mongodb.net/?retryWrites=true&w=majority")
-.then(() => {
-    console.log("MongoDB Connected Successfully 🚀");
-})
-.catch((err) => {
-    console.log("MongoDB Connection Error:", err);
+mongoose.connect("mongodb+srv://SummitlinkDB:SummitLink_DB2026@cluster0.xt2kxhu.mongodb.net/summitlinkDB?retryWrites=true&w=majority")
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.log("DB ERROR:", err)); 
 });
+
 // 👤 USER MODEL
 const UserSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
