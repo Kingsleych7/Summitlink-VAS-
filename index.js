@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 app.use(express.urlencoded({ extended: false }));
 
 // 🔗 CONNECT MONGODB
-mongoose.connect("mongodb+srv://testuser:testpass23@cluster0.xt2kxhu.mongodb.net/testdb?retryWrites=true&w=majority")
+mongoose.connect("mongodb+srv://testuser:testpass123@cluster0.xt2kxhu.mongodb.net/testdb?retryWrites=true&w=majority")
 .then(() => console.log("MongoDB connected"))
 .catch(err => console.log("DB ERROR:", err)); 
 
