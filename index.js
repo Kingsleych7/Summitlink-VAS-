@@ -154,7 +154,6 @@ app.post("/paystack-webhook", async (req, res) => {
             if (user) {
                 user.balance += amount;
                 await user.save();
-
                 console.log("Wallet credited:", amount);
             }
         }
