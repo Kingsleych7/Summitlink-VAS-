@@ -43,82 +43,68 @@ app.post("/ussd", async (req, res) => {
             user = await User.create({
                 phoneNumber,
                 email: phoneNumber + "@test.com",
-                balance: 1000
+                balance: 0
             });
         }
 
         let response = "";
 
+        // ======================
         // MAIN MENU
+        // ======================
         if (text === "") {
-            response = "CON Welcome to SummitLink\n1. My Account\n2. Buy Data\n3. Fund Wallet\n4. Register";
+            response =
+`CON Welcome to SummitLink Wallet
+1. Check Balance
+2. Buy Data
+3. Fund Wallet
+4. Transaction History`;
         }
 
-        // ACCOUNT
+        // ======================
+        // CHECK BALANCE
+        // ======================
         else if (text === "1") {
-            response = "CON My Account\n1. Check Balance";
-        }
-
-        else if (text === "1*1") {
             response = `END Your balance is ₦${user.balance}`;
         }
 
-        // REGISTER
+        // ======================
+        // TRANSACTION HISTORY
+        // ======================
         else if (text === "4") {
-            response = "CON Enter your email address";
+            const tx = await Transaction.find({ phoneNumber }).sort({ createdAt: -1 }).limit(5);
+
+            if (tx.length === 0) {
+                response = "END No transactions yet";
+            } else {
+                let history = tx.map(t =>
+                    `${t.type.toUpperCase()} ₦${t.amount} - ${t.description}`
+                ).join("\n");
+
+                response = `END Recent Transactions:\n${history}`;
+            }
         }
 
-        else if (text.startsWith("4*")) {
-            const email = text.split("*")[1];
-
-            user.email = email;
-            await user.save();
-
-            response = "END Registration successful";
-        }
-
-        // BUY DATA MENU
-        else if (text === "2") {
-            response = "CON Buy Data\n1. 1GB - ₦300\n2. 2GB - ₦500\n3. 3GB - ₦800\n4. 5GB - ₦1200";
-        }
-
-        else if (text === "2*1" && user.balance >= 300) {
-            user.balance -= 300;
-            await user.save();
-            response = "END You bought 1GB";
-        }
-
-        else if (text === "2*2" && user.balance >= 500) {
-            user.balance -= 500;
-            await user.save();
-            response = "END You bought 2GB";
-        }
-
-        else if (text === "2*3" && user.balance >= 800) {
-            user.balance -= 800;
-            await user.save();
-            response = "END You bought 3GB";
-        }
-
-        else if (text === "2*4" && user.balance >= 1200) {
-            user.balance -= 1200;
-            await user.save();
-            response = "END You bought 5GB";
-        }
-
-        // FUND WALLET (PAYSTACK LINK)
+        // ======================
+        // FUND WALLET FLOW (STATE 1)
+        // ======================
         else if (text === "3") {
-            response = "END Fund your wallet here: https://paystack.shop/pay/thax9-8kli";
+            response = "CON Enter amount to fund:";
         }
 
-        else {
-            response = "END Invalid input";
+        // USER ENTERED AMOUNT
+        else if (text.startsWith("3*")) {
+            const amount = text.split("*")[1];
+
+            const payLink = `https://your-domain.com/paystack/pay/${phoneNumber}/${amount}`;
+
+            response = `END Pay here:\n${payLink}`;
         }
 
         res.send(response);
 
     } catch (err) {
-        console.log("USSD ERROR:", err);
+        console.log(err);
         res.send("END System error");
     }
 });
