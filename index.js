@@ -15,9 +15,21 @@ mongoose.connect("mongodb+srv://testuser:testpass123@cluster0.xt2kxhu.mongodb.ne
 const UserSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 1000 }
+    balance: { type: Number, default: 0 },
+
+    // NEW
+    session: { type: String, default: "" }
 });
-const User = mongoose.model("User", UserSchema);
+
+const TransactionSchema = new mongoose.Schema({
+    phoneNumber: String,
+    type: String, // credit / debit
+    amount: Number,
+    description: String,
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Transaction = mongoose.model("Transaction", TransactionSchema);
 
 // 🌐 TEST ROUTE
 app.post("/ussd", async (req, res) => {
