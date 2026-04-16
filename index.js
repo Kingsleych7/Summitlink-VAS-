@@ -187,9 +187,9 @@ app.get("/paystack/pay/:phone/:amount", async (req, res) => {
     try {
         const { phone, amount } = req.params;
 
-        let user = await User.findOne({ phoneNumber: phone });
+const normalizedPhone = normalizePhone(phone);
+let user = await User.findOne({ phoneNumber: normalizedPhone });
 
-        const response = await axios.post(
             "https://api.paystack.co/transaction/initialize",
             {
                 email: user.email,
