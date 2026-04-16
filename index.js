@@ -22,15 +22,6 @@ mongoose.connect("mongodb+srv://testuser:testpass123@cluster0.xt2kxhu.mongodb.ne
 .catch(err => console.log("DB ERROR:", err)); 
 
 // 👤 USER MODEL
-const User = mongoose.model("User", UserSchema);
-    phoneNumber: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    balance: { type: Number, default: 0 },
-
-    // NEW
-    session: { type: String, default: "" }
-});
-
 const TransactionSchema = new mongoose.Schema({
     phoneNumber: String,
     type: String, // credit / debit
@@ -41,6 +32,17 @@ const TransactionSchema = new mongoose.Schema({
 
 const Transaction = mongoose.model("Transaction", TransactionSchema);
 
+const User = mongoose.model("User", UserSchema);
+    phoneNumber: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    balance: { type: Number, default: 0 },
+
+    // NEW
+    session: { type: String, default: "" }
+});
+
+const TransactionSchema = new mongoose.Schema({
+  
 // 🌐 TEST ROUTE
 app.post("/ussd", async (req, res) => {
     try {
@@ -196,7 +198,7 @@ app.get("/paystack/pay/:phone/:amount", async (req, res) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer YOUR_SECRET_KEY`,
+                    process.env.PAYSTACK_SECRET
                     "Content-Type": "application/json"
                 }
             }
