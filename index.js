@@ -171,7 +171,7 @@ let user = await User.findOne({ phoneNumber });
         // FUND WALLET
         // ======================
         else if (text === "4") {
-            const link = `https://your-backend.com/paystack/pay/${phoneNumber}/1000`;
+            const link = const link = `http://127.0.0.1:10000/paystack/pay/${phoneNumber}/1000`;
             response = `END Fund wallet:\n${link}`;
         }
 
@@ -247,7 +247,7 @@ app.post("/paystack-webhook", async (req, res) => {
 });
 
 // 🚀 SERVER
-const PORT = process.env.PORT || 3000;
-app.listen(10000, () => {
-    console.log("Server running on port 10000");
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log("Server running on port", PORT);
 });
