@@ -56,73 +56,77 @@ const TransactionSchema = new mongoose.Schema({
 app.post("/ussd", async (req, res) => {
     try {
         let { text = "", phoneNumber = "" } = req.body;
-        text = text.trim();
 
+        text = text.trim();
         phoneNumber = normalizePhone(phoneNumber);
-let user = await User.findOne({ phoneNumber });
+
+        // ======================
+        // GET OR CREATE USER
+        // ======================
+        let user = await User.findOne({ phoneNumber });
 
         if (!user) {
             user = await User.create({
                 phoneNumber,
                 email: phoneNumber + "@test.com",
-                balance: 0
+                balance: 0,
+                pin: "1234" // default PIN (temporary)
             });
         }
 
         let response = "";
-if (text.length === 4 && !text.includes("*")) {
 
-    if (text !== user.pin) {
-        return res.send("END Incorrect PIN");
-    }
+        // ======================
+        // STEP 1: PIN AUTH
+        // ======================
+        if (text.length === 4 && !text.includes("*")) {
 
-    return res.send(
-`CON Welcome Back
+            if (text !== user.pin) {
+                return res.send("END ❌ Incorrect PIN");
+            }
+
+            return res.send(
+`CON Welcome to SummitLink VTU
 1. Check Balance
 2. Buy Airtime
 3. Buy Data
-4. 4. Fund Wallet (Paystack)
+4. Fund Wallet
 5. Transaction History`
-    );
-}
+            );
+        }
+
         // ======================
         // MAIN MENU
         // ======================
         if (text === "") {
-    response = `CON SummitLink VTU
-Enter your PIN:`;
-}
-1. Check Balance
-2. Buy Airtime
-3. Buy Data
-4. Fund Wallet`;
+            return res.send("CON Enter your 4-digit PIN:");
         }
 
         // ======================
-        // BALANCE
+        // CHECK BALANCE
         // ======================
-        else if (text === "1") {
-            response = `END Balance: ₦${user.balance}`;
+        if (text === "1") {
+            return res.send(`END Balance: ₦${user.balance}`);
         }
 
         // ======================
         // AIRTIME FLOW
         // ======================
-        else if (text === "2") {
-            response = "CON Enter amount for airtime:";
+        if (text === "2") {
+            return res.send("CON Enter airtime amount:");
         }
 
-        else if (text.startsWith("2*")) {
-            const amount = parseInt(text.split("*")[1]);
+        if (text.startsWith("2*")) {
+            const amount = Number(text.split("*")[1]);
 
             if (user.balance < amount) {
-                return res.send("END Insufficient balance");
+                return res.send("END ❌ Insufficient balance");
             }
 
             const result = await buyAirtime(user.phoneNumber, amount);
 
             if (!result) {
-                return res.send("END Airtime purchase failed");
+                return res.send("END ❌ Airtime failed");
             }
 
             user.balance -= amount;
@@ -135,23 +139,26 @@ Enter your PIN:`;
                 description: "Airtime purchase"
             });
 
-            response = `END SUCCESS
-Airtime: ₦${amount}
-Phone: ${user.phoneNumber}
-Balance: ₦${user.balance}`;
+            return res.send(
+`END ✅ Airtime Successful
+Amount: ₦${amount}
+Balance: ₦${user.balance}`
+            );
+        }
 
         // ======================
         // DATA FLOW
         // ======================
-        else if (text === "3") {
-            response =
+        if (text === "3") {
+            return res.send(
 `CON Select Data Plan
 1. 1GB - ₦300
 2. 2GB - ₦500
-3. 5GB - ₦1200`;
+3. 5GB - ₦1200`
+            );
         }
 
-        else if (text.startsWith("3*")) {
+        if (text.startsWith("3*")) {
             const option = text.split("*")[1];
 
             let amount = 0;
@@ -160,42 +167,22 @@ Balance: ₦${user.balance}`;
             if (option === "1") {
                 amount = 300;
                 plan = "1GB";
-            }
-            if (option === "2") {
+            } else if (option === "2") {
                 amount = 500;
                 plan = "2GB";
-            }
-            if (option === "3") {
+            } else if (option === "3") {
                 amount = 1200;
                 plan = "5GB";
             }
-else if (text === "5") {
 
-    const txns = await Transaction.find({ phoneNumber })
-        .sort({ createdAt: -1 })
-        .limit(5);
-
-    if (txns.length === 0) {
-        return res.send("END No transactions found");
-    }
-
-    let responseText = "END Last 5 Transactions:\n";
-
-    txns.forEach(t => {
-        responseText += `${t.type.toUpperCase()} ₦${t.amount} - ${t.description}\n`;
-    });
-
-    return res.send(responseText);
-}
-         if (user.balance < amount) {
- 
-                return res.send("END Insufficient balance");
+            if (user.balance < amount) {
+                return res.send("END ❌ Insufficient balance");
             }
 
             const result = await buyData(user.phoneNumber, plan);
 
             if (!result) {
-                return res.send("END Data purchase failed");
+                return res.send("END ❌ Data purchase failed");
             }
 
             user.balance -= amount;
@@ -208,25 +195,59 @@ else if (text === "5") {
                 description: `${plan} data purchase`
             });
 
-            response = `END You bought ${plan} successfully`;
+            return res.send(
+`END ✅ Data Successful
+Plan: ${plan}
+Balance: ₦${user.balance}`
+            );
         }
 
         // ======================
         // FUND WALLET
         // ======================
-        else if (text === "4") {
+        if (text === "4") {
             const link = `http://127.0.0.1:10000/paystack/pay/${phoneNumber}/1000`;
-            response = `END Fund wallet:\n${link}`;
+
+            return res.send(
+`END 💳 Fund Wallet
+Click link:
+${link}`
+            );
         }
 
-        res.send(response);
+        // ======================
+        // TRANSACTION HISTORY
+        // ======================
+        if (text === "5") {
+
+            const txns = await Transaction.find({ phoneNumber })
+                .sort({ createdAt: -1 })
+                .limit(5);
+
+            if (!txns.length) {
+                return res.send("END No transactions found");
+            }
+
+            let output = "END Last 5 Transactions:\n";
+
+            txns.forEach(t => {
+                output += `${t.type.toUpperCase()} ₦${t.amount} - ${t.description}\n`;
+            });
+
+            return res.send(output);
+        }
+
+        // ======================
+        // DEFAULT FALLBACK
+        // ======================
+        return res.send("END Invalid request");
 
     } catch (err) {
-        console.log(err);
-        res.send("END System error");
+        console.log("USSD ERROR:", err);
+        return res.send("END System error");
     }
 });
-
+  
 app.get("/paystack/pay/:phone/:amount", async (req, res) => {
     try {
         const { phone, amount } = req.params;
