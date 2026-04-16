@@ -81,7 +81,7 @@ if (text.length === 4 && !text.includes("*")) {
 1. Check Balance
 2. Buy Airtime
 3. Buy Data
-4. Fund Wallet
+4. 4. Fund Wallet (Paystack)
 5. Transaction History`
     );
 }
@@ -215,7 +215,7 @@ else if (text === "5") {
         // FUND WALLET
         // ======================
         else if (text === "4") {
-            const link = const link = `http://127.0.0.1:10000/paystack/pay/${phoneNumber}/1000`;
+            const link = `http://127.0.0.1:10000/paystack/pay/${phoneNumber}/1000`;
             response = `END Fund wallet:\n${link}`;
         }
 
