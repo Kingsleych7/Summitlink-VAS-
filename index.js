@@ -52,6 +52,10 @@ const UserSchema = new mongoose.Schema({
 
 const TransactionSchema = new mongoose.Schema({
   
+if (!phoneNumber) {
+  return res.send("END Missing phone number");
+}
+
 // 🌐 TEST ROUTE
 app.post("/ussd", async (req, res) => {
     try {
