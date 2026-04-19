@@ -41,7 +41,6 @@ const Transaction = mongoose.model("Transaction", TransactionSchema);
 
 const UserSchema = new mongoose.Schema({
     phoneNumber: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
     balance: { type: Number, default: 0 },
 
     session: { type: String, default: "" },
