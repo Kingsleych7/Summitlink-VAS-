@@ -246,9 +246,9 @@ ${link}`
         return res.send("END Invalid request");
 
     } catch (err) {
-        console.log("USSD ERROR:", err);
-        return res.send("END System error");
-    }
+  console.error("🔥 FULL ERROR:", err);
+  return res.send("END System error, try again");
+  }
 });
   
 app.get("/paystack/pay/:phone/:amount", async (req, res) => {
