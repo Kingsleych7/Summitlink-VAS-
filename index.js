@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const axios = require("axios");
+const crypto = require("crypto");
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json()); // REQUIRED for Paystack webhook
@@ -280,33 +281,43 @@ let user = await User.findOne({ phoneNumber: normalizedPhone });
     }
 });  
 
-app.post("/paystack-webhook", async (req, res) => {
-    try {
-        const event = req.body;
+app.post("/paystack/webhook", express.json(), async (req, res) => {
+  const hash = crypto
+    .createHmac("sha512", PAYSTACK_SECRET_KEY)
+    .update(JSON.stringify(req.body))
+    .digest("hex");
 
-        if (event.event === "charge.success") {
-            const email = event.data.customer.email;
-            const amount = event.data.amount / 100;
+  if (hash !== req.headers["x-paystack-signature"]) {
+    return res.sendStatus(401);
+  }
 
-            let user = await User.findOne({ email });
+  const event = req.body;
 
-            if (user) {
-                user.balance += amount;
-                await user.save();
+  if (event.event === "charge.success") {
 
-                // 🔥 LOG TRANSACTION
-                await Transaction.create({
-                    phoneNumber: user.phoneNumber,
-                    type: "credit",
-                    amount,
-                    description: "Wallet funding via Paystack"
-                });
+    const data = event.data;
+    const phoneNumber = data.metadata.phoneNumber;
+    const amount = data.amount / 100;
 
-                console.log("Wallet credited:", amount);
-            }
-        }
+    const user = await User.findOne({ phoneNumber });
+    if (!user) return res.sendStatus(200);
 
-        res.sendStatus(200);
+    user.balance += amount;
+    await user.save();
+
+    await Transaction.create({
+      phone: phoneNumber,
+      type: "FUNDING",
+      amount,
+      reference: data.reference
+    });
+
+    console.log("💰 Payment confirmed:", phoneNumber, amount);
+  }
+
+  res.sendStatus(200);
+});
+       
 
     } catch (err) {
         console.log(err);
