@@ -210,10 +210,10 @@ if (text === user.pin + "*5") {
         return res.send("END Invalid request");
 
     } catch (err) {
-  console.error("🔥 FULL ERROR:", err);
-  return res.send("END System error, try again");
-  }
-});
+            console.error("🔥 FULL ERROR:", err);
+            return res.send("END System error, try again");
+         }
+     });
   
 app.get("/paystack/pay/:phone/:amount", async (req, res) => {
     try {
