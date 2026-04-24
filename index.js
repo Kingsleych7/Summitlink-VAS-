@@ -109,6 +109,24 @@ app.post("/ussd", async (req, res) => {
          if (text === user.pin + "*1") {
             return res.send(`END Balance: ₦${user.balance}`);
         }
+           
+        // STEP 4: AIRTIME
+        else if (text === user.pin + "*2") {
+            return res.send("CON Enter amount:");
+        }
+
+        else if (text.startsWith(user.pin + "*2*")) {
+            const amount = Number(text.split("*")[2]);
+
+            if (user.balance < amount) {
+                return res.send("END ❌ Insufficient balance");
+            }
+
+            user.balance -= amount;
+            await user.save();
+
+            return res.send("END ✅ Airtime sent");
+        }
 
         // ======================
         // DATA MENU
@@ -166,8 +184,7 @@ Balance: ₦${user.balance}`);
         }
 
         return res.send("END Invalid option");
-
-        // ======================
+  // ======================
 // FUND WALLET
 // ======================
 // FUND WALLET ✅ FIXED
