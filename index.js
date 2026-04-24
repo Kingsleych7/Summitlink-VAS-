@@ -157,13 +157,9 @@ Plan: ${plan}
 Balance: ₦${user.balance}`);
         }
 
-        return res.send("END Invalid option");
-
-    } catch (err) {
-        console.log("USSD ERROR:", err);
-        res.send("END System error");
+        return res.send("END Invalid option"):
     }
-});
+
         // ======================
 // FUND WALLET
 // ======================
