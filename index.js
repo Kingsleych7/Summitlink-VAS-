@@ -136,62 +136,67 @@ const Transaction = mongoose.model("Transaction", TransactionSchema);
     }
  });
 
-        // ======================
-        // DATA FLOW
-        // ======================
-        if (text === "3") {
-            return res.send(
+ // ======================
+// DATA FLOW
+// ======================
+if (text === user.pin + "*3") {
+    return res.send(
 `CON Select Data Plan
 1. 1GB - ₦300
 2. 2GB - ₦500
 3. 5GB - ₦1200`
-            );
-        }
+    );
+}
 
-        if (text.startsWith("3*")) {
-            const option = text.split("*")[1];
+if (text.startsWith(user.pin + "*3*")) {
+    const option = text.split("*")[2];
 
-            let amount = 0;
-            let plan = "";
+    let amount = 0;
+    let plan = "";
 
-            if (option === "1") {
-                amount = 300;
-                plan = "1GB";
-            } else if (option === "2") {
-                amount = 500;
-                plan = "2GB";
-            } else if (option === "3") {
-                amount = 1200;
-                plan = "5GB";
-            }
+    if (option === "1") {
+        amount = 300;
+        plan = "1GB";
+    } else if (option === "2") {
+        amount = 500;
+        plan = "2GB";
+    } else if (option === "3") {
+        amount = 1200;
+        plan = "5GB";
+    }
 
-            if (user.balance < amount) {
-                return res.send("END ❌ Insufficient balance");
-            }
+    if (user.balance < amount) {
+        return res.send("END ❌ Insufficient balance");
+    }
 
-            const result = await buyData(user.phoneNumber, plan);
+    const result = await buyData(user.phoneNumber, plan);
 
-            if (!result) {
-                return res.send("END ❌ Data purchase failed");
-            }
+    if (!result) {
+        return res.send("END ❌ Data purchase failed");
+    }
 
-            user.balance -= amount;
-            await user.save();
+    user.balance -= amount;
+    await user.save();
 
-            await Transaction.create({
-                phoneNumber,
-                type: "debit",
-                amount,
-                description: `${plan} data purchase`
-            });
+    await Transaction.create({
+        phoneNumber,
+        type: "debit",
+        amount,
+        description: `${plan} data purchase`
+    });
 
-            return res.send(
-`END ✅ Data Successful
+    return res.send(`END ✅ Data Successful
 Plan: ${plan}
-Balance: ₦${user.balance}`
-            );
+Balance: ₦${user.balance}`);
         }
 
+        return res.send("END Invalid option");
+
+    } catch (err) {
+        console.log(err);
+        res.send("END System error");
+    }
+});
         // ======================
         // FUND WALLET
         // ======================
