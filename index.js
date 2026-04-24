@@ -285,6 +285,7 @@ app.post("/paystack/webhook", express.json(), async (req, res) => {
 // 🚀 SERVER
 
 const PORT = process.env.PORT || 10000;
+
 app.listen(PORT, () => {
     console.log("Server running on port", PORT);
 });
