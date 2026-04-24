@@ -56,7 +56,7 @@ const TransactionSchema = new mongoose.Schema({
 const Transaction = mongoose.model("Transaction", TransactionSchema);
 
 // 🌐 TEST ROUTE
-app.post("/ussd", async (req, res) => {
+ app.post("/ussd", async (req, res) => {
     try {
         let { text = "", phoneNumber = "" } = req.body;
 
@@ -73,22 +73,56 @@ app.post("/ussd", async (req, res) => {
                 phoneNumber,
                 email: phoneNumber + "@test.com",
                 balance: 0,
-                pin: "1234" // default PIN (temporary)
+                pin: "1234"
             });
         }
 
         let response = "";
 
         // ======================
-        // STEP 1: PIN AUTH
+        // STEP 1: ASK FOR PIN
         // ======================
-        if (text.length === 4 && !text.includes("*")) {
+        if (text === "") {
+            response = "CON Welcome to SummitLink\nEnter your PIN:";
+        }
+
+        // ======================
+        // STEP 2: VERIFY PIN
+        // ======================
+        else if (text.length === 4 && !text.includes("*")) {
 
             if (text !== user.pin) {
                 return res.send("END ❌ Incorrect PIN");
             }
 
             return res.send(
+                "CON Welcome Back\n1. My Account\n2. Buy Data\n3. Fund Wallet"
+            );
+        }
+
+        // ======================
+        // STEP 3: MENU ACTIONS
+        // ======================
+        else if (text === user.pin + "*1") {
+            response = `END Balance: ₦${user.balance}`;
+        }
+
+        else if (text === user.pin + "*3") {
+            response = "END Fund your wallet via Paystack link";
+        }
+
+        else {
+            response = "END Invalid option";
+        }
+
+        res.send(response);
+
+    } catch (err) {
+        console.log("USSD ERROR:", err);
+        res.send("END System error");
+    }
+});
+         
 `CON Welcome to SummitLink VTU
 1. Check Balance
 2. Buy Airtime
