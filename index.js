@@ -122,7 +122,7 @@ app.post("/ussd", async (req, res) => {
         // ======================
         // DATA PURCHASE
         // ======================
-        if (text.startsWith(user.pin + "*3*")) {
+  if (text.startsWith(user.pin + "*3*")) {
             const option = text.split("*")[2];
 
             let amount = 0;
