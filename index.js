@@ -291,9 +291,7 @@ if (parts[3] === "0") {
 
     return res.send(msg);
 }
-<<<<<<< HEAD
-      
-=======
+
  const txs = await Transaction.find({ phoneNumber })
                 .sort({ createdAt: -1 })
                 .limit(3);}
