@@ -8,6 +8,11 @@ const crypto = require("crypto");
 
 const PORT = process.env.PORT || 10000;
 
+const africastalking = require("africastalking")({
+  apiKey: process.env.AT_API_KEY,
+  username: process.env.AT_USERNAME
+});
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
@@ -24,7 +29,36 @@ function normalizePhone(phone) {
 // MOCK FUNCTIONS
 // =======================
 async function buyAirtime(phone, amount) {
-    return true;
+    try {
+        const result = await africastalking.AIRTIME.send({
+            recipients: [
+                {
+                    phoneNumber: phone,
+                    amount: `NGN ${amount}`
+                }
+            ]
+        });
+
+        console.log("Airtime sent:", result);
+        return true;
+
+    } catch (err) {
+        console.log("Airtime error:", err);
+        return false;
+    }
+}
+
+async function sendSMS(phone, message) {
+    try {
+        await africastalking.SMS.send({
+            to: phone,
+            message
+        });
+
+        console.log("SMS sent");
+    } catch (err) {
+        console.log("SMS error:", err);
+    }
 }
 
 async function buyData(phone, plan) {
@@ -136,6 +170,12 @@ app.post("/ussd", async (req, res) => {
                 amount,
                 description: "Airtime purchase"
             });
+              
+     // ✅ SEND SMS HERE
+     await sendSMS(
+        user.phoneNumber,
+        `₦${amount} airtime sent successfully`
+    );
 
             return res.send("END ✅ Airtime sent");
         }
@@ -173,13 +213,18 @@ app.post("/ussd", async (req, res) => {
                 amount,
                 description: `${plan} data`
             });
+         
+ await sendSMS(
+    user.phoneNumber,
+    `${plan} data purchased successfully`
+);
 
             return res.send(`END ✅ Data Successful\nPlan: ${plan}`);
         }
 
         // FUND WALLET
         if (text === user.pin + "*4") {
-            const link = `https://summitlink-vas-1.onrender.com/paystack/pay/${phoneNumber}/1000`;
+            const link = `https://summitlink-backend.onrender.com/paystack/pay/${phoneNumber}/1000`;
 
             return res.send(`END 💳 Fund Wallet\n${link}`);
         }
