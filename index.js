@@ -156,12 +156,22 @@ app.post("/ussd", async (req, res) => {
 
         // AIRTIME
         if (text === user.pin + "*2") {
-            return res.send("CON Enter amount:");
-        }
+    return res.send("CON Enter amount:\n0. Back\n00. Main Menu");
+}
 
         if (text.startsWith(user.pin + "*2*")) {
             const amount = Number(text.split("*")[2]);
+     const parts = text.split("*");
 
+// BACK pressed after entering amount
+if (parts[3] === "0") {
+    return res.send(`CON Welcome back
+1. Check Balance
+2. Buy Airtime
+3. Buy Data
+4. Fund Wallet
+5. Transactions`);
+}
             if (user.balance < amount) {
                 return res.send("END ❌ Insufficient balance");
             }
@@ -195,7 +205,17 @@ app.post("/ussd", async (req, res) => {
 
         if (text.startsWith(user.pin + "*3*")) {
             const option = text.split("*")[2];
+const parts = text.split("*");
 
+// BACK pressed after entering amount
+if (parts[3] === "0") {
+    return res.send(`CON Welcome back
+1. Check Balance
+2. Buy Airtime
+3. Buy Data
+4. Fund Wallet
+5. Transactions`);
+}
             let amount = 0;
             let plan = "";
 
@@ -236,7 +256,18 @@ app.post("/ussd", async (req, res) => {
 
         // TRANSACTIONS
         if (text === user.pin + "*5") {
-            const txs = await Transaction.find({ phoneNumber })
+           const parts = text.split("*");
+
+// BACK pressed after entering amount
+if (parts[3] === "0") {
+    return res.send(`CON Welcome back
+1. Check Balance
+2. Buy Airtime
+3. Buy Data
+4. Fund Wallet
+5. Transactions`);
+}
+ const txs = await Transaction.find({ phoneNumber })
                 .sort({ createdAt: -1 })
                 .limit(3);
 
