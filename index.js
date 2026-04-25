@@ -114,7 +114,7 @@ app.post("/ussd", async (req, res) => {
 
         let userInput = text.trim();
         const normalizedPhone = normalizePhone(phoneNumber);
-       
+
        // 👇 PUT NAVIGATION HANDLER HERE
         const input = text;
 
@@ -204,7 +204,7 @@ if (parts[3] === "0") {
                 amount,
                 description: "Airtime purchase"
             });
-              
+
      // ✅ SEND SMS HERE
      await sendSMS(
         user.phoneNumber,
@@ -256,7 +256,7 @@ if (parts[3] === "0") {
                 amount,
                 description: `${plan} data`
             });
-         
+
  await sendSMS(
     user.phoneNumber,
     `${plan} data purchased successfully`
@@ -291,7 +291,24 @@ if (parts[3] === "0") {
 
     return res.send(msg);
 }
+<<<<<<< HEAD
       
+=======
+ const txs = await Transaction.find({ phoneNumber })
+                .sort({ createdAt: -1 })
+                .limit(3);}
+
+            if (!txs.length) return res.send("END No transactions");
+
+            let msg = "END Recent Transactions:\n";
+            txs.forEach(t => {
+                msg += `${t.type} ₦${t.amount}\n`;
+            });
+
+            return res.send(msg);
+        }
+
+>>>>>>> 33682a0 (local USSD updates)
         return res.send("END Invalid request");
 
     } catch (err) {
