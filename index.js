@@ -162,7 +162,6 @@ app.post("/ussd", async (req, res) => {
         if (text.startsWith(user.pin + "*2*")) {
             const amount = Number(text.split("*")[2]);
      const parts = text.split("*");
-
 // BACK pressed after entering amount
 if (parts[3] === "0") {
     return res.send(`CON Welcome back
@@ -206,7 +205,6 @@ if (parts[3] === "0") {
         if (text.startsWith(user.pin + "*3*")) {
             const option = text.split("*")[2];
 const parts = text.split("*");
-
 // BACK pressed after entering amount
 if (parts[3] === "0") {
     return res.send(`CON Welcome back
@@ -256,8 +254,7 @@ if (parts[3] === "0") {
 
         // TRANSACTIONS
         if (text === user.pin + "*5") {
-           const parts = text.split("*");
-
+const parts = text.split("*");
 // BACK pressed after entering amount
 if (parts[3] === "0") {
     return res.send(`CON Welcome back
@@ -270,7 +267,16 @@ if (parts[3] === "0") {
  const txs = await Transaction.find({ phoneNumber })
                 .sort({ createdAt: -1 })
                 .limit(3);
-
+const parts = text.split("*");
+// BACK pressed after entering amount
+if (parts[3] === "0") {
+    return res.send(`CON Welcome back
+1. Check Balance
+2. Buy Airtime
+3. Buy Data
+4. Fund Wallet
+5. Transactions`);
+}
             if (!txs.length) return res.send("END No transactions");
 
             let msg = "END Recent Transactions:\n";
