@@ -282,39 +282,24 @@ if (parts[3] === "0") {
 
         // TRANSACTIONS
         if (text === user.pin + "*5") {
-const parts = text.split("*");
-// BACK pressed after entering amount
-if (parts[3] === "0") {
-    return res.send(`CON Welcome back
-1. Check Balance
-2. Buy Airtime
-3. Buy Data
-4. Fund Wallet
-5. Transactions`);
+
+    const txs = await Transaction.find({ phoneNumber })
+        .sort({ createdAt: -1 })
+        .limit(3);
+
+    if (!txs.length) {
+        return res.send("END No transactions");
+    }
+
+    let msg = "END Recent Transactions:\n";
+
+    txs.forEach(t => {
+        msg += `${t.type} ₦${t.amount}\n`;
+    });
+
+    return res.send(msg);
 }
- const txs = await Transaction.find({ phoneNumber })
-                .sort({ createdAt: -1 })
-                .limit(3);
-const parts = text.split("*");
-// BACK pressed after entering amount
-if (parts[3] === "0") {
-    return res.send(`CON Welcome back
-1. Check Balance
-2. Buy Airtime
-3. Buy Data
-4. Fund Wallet
-5. Transactions`);
-}
-            if (!txs.length) return res.send("END No transactions");
-
-            let msg = "END Recent Transactions:\n";
-            txs.forEach(t => {
-                msg += `${t.type} ₦${t.amount}\n`;
-            });
-
-            return res.send(msg);
-        }
-
+      
         return res.send("END Invalid request");
 
     } catch (err) {
