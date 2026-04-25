@@ -105,30 +105,35 @@ const Transaction = mongoose.model("Transaction", TransactionSchema);
 // =======================
 app.post("/ussd", async (req, res) => {
     try {
-        let { text = "", phoneNumber = "" } = req.body;
+        const {
+            sessionId,
+            serviceCode,
+            phoneNumber,
+            text = ""
+        } = req.body;
 
-        text = text.trim();
-        phoneNumber = normalizePhone(phoneNumber);
+        let userInput = text.trim();
+        const normalizedPhone = normalizePhone(phoneNumber);
 
-        let user = await User.findOne({ phoneNumber });
+        let user = await User.findOne({ phoneNumber: normalizedPhone });
 
         if (!user) {
             user = await User.create({
-                phoneNumber,
-                email: phoneNumber + "@test.com",
+                phoneNumber: normalizedPhone,
+                email: normalizedPhone + "@test.com",
                 balance: 1000,
                 pin: "1234"
             });
         }
 
-        // STEP 1
-        if (text === "") {
+        // FIRST SCREEN
+        if (userInput === "") {
             return res.send("CON Enter your 4-digit PIN:");
         }
 
-        // STEP 2 VERIFY PIN
-        if (!text.includes("*") && text.length === 4) {
-            if (text !== user.pin) {
+        // PIN CHECK
+        if (!userInput.includes("*") && userInput.length === 4) {
+            if (userInput !== user.pin) {
                 return res.send("END ❌ Incorrect PIN");
             }
 
