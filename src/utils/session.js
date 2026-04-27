@@ -1,12 +1,29 @@
-const redis = require("../config/redis");
+const Session = require("../models/Session");
 
+// GET SESSION
 async function getSession(phone) {
-    const raw = await redis.get(phone);
-    return raw ? JSON.parse(raw) : {};
+    let session = await Session.findOne({ phone });
+
+    if (!session) {
+        session = await Session.create({
+            phone,
+            data: {}
+        });
+    }
+
+    return session.data;
 }
 
+// SAVE SESSION
 async function saveSession(phone, data) {
-    await redis.set(phone, JSON.stringify(data), "EX", 120);
+    await Session.findOneAndUpdate(
+        { phone },
+        { data },
+        { upsert: true, new: true }
+    );
 }
 
-module.exports = { getSession, saveSession };
+module.exports = {
+    getSession,
+    saveSession
+};
