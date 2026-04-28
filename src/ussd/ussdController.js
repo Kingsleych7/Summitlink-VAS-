@@ -6,6 +6,7 @@ const sendSMS = require("../services/sms");
 
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
+const bcrypt = require("bcryptjs");
 
 module.exports = async (req, res) => {
     try {
@@ -46,7 +47,9 @@ if (text === "") {
                 phoneNumber,
                 email: phoneNumber + "@test.com",
                 balance: 1000,
-                pin: "1234"
+                const hashedPin = await bcrypt.hash("1234", 10);
+
+pin: hashedPin
             });
         }
 
@@ -75,9 +78,11 @@ if (text === "") {
                 return res.send("CON Enter your PIN:");
             }
 
-            if (text !== user.pin) {
-                return res.send("END ❌ Incorrect PIN");
-            }
+            const isValid = await bcrypt.compare(userInput, user.pin);
+
+if (!isValid) {
+    return res.send("END ❌ Incorrect PIN");
+}
 
             session.state = "MENU";
             await saveSession(phoneNumber, session);
