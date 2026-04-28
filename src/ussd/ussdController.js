@@ -7,6 +7,7 @@ const sendSMS = require("../services/sms");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const bcrypt = require("bcryptjs");
+const { getSession, saveSession, clearSession } = require("../utils/session");
 
 module.exports = async (req, res) => {
     try {
@@ -74,51 +75,48 @@ if (text === "") {
 
         // PIN
         if (session.state === "PIN") {
-            if (text === "") {
-                return res.send("CON Enter your PIN:");
-            }
+    if (!text) {
+        return res.send("CON Enter your 4-digit PIN:");
+    }
 
-            const isValid = await bcrypt.compare(userInput, user.pin);
+    if (text !== user.pin) {
+        return res.send("END ❌ Incorrect PIN");
+    }
 
-if (!isValid) {
-    return res.send("END ❌ Incorrect PIN");
-}
+    session.state = "MAIN_MENU";
+    saveSession(normalizedPhone, session);
 
-            session.state = "MENU";
-            await saveSession(phoneNumber, session);
-
-            return res.send(`CON Welcome
+    return res.send(`CON Welcome to SummitLink
 1. Check Balance
 2. Buy Airtime
 3. Buy Data
 4. Fund Wallet
 5. Transactions`);
-        }
+}
 
         // MENU
-        if (session.state === "MENU") {
+ if (session.state === "MAIN_MENU") {
+       if (text === "1") {
+    return res.send(`END Balance: ₦${user.balance}`);
+}
 
-            if (text === "1") {
-                return res.send(`END Balance: ₦${user.balance}`);
-            }
+if (text === "2") {
+    session.state = "AIRTIME";
+    saveSession(normalizedPhone, session);
+    return res.send("CON Enter amount:");
+}
 
-            if (text === "2") {
-                session.state = "AIRTIME";
-                await saveSession(phoneNumber, session);
+if (text === "3") {
+    session.state = "DATA";
+    saveSession(normalizedPhone, session);
+    return res.send("CON Select data plan");
+}
 
-                return res.send("CON Enter amount:\n0. Back\n00. Main Menu");
-            }
-
-            if (text === "3") {
-                session.state = "DATA";
-                await saveSession(phoneNumber, session);
-
-                return res.send(`CON Select Data Plan
-1. 1GB - ₦300
-2. 2GB - ₦500
-3. 5GB - ₦1200`);
-            }
-
+if (text === "0") {
+    session.state = "PIN";
+    saveSession(normalizedPhone, session);
+    return res.send("CON Enter PIN:");
+}
             if (text === "4") {
                 return res.send(`END 💳 Fund Wallet
 https://your-backend.onrender.com/paystack/pay/${phoneNumber}/1000`);
@@ -145,46 +143,24 @@ https://your-backend.onrender.com/paystack/pay/${phoneNumber}/1000`);
         // AIRTIME
         if (session.state === "AIRTIME") {
 
-            if (text === "0") {
-                session.state = "MENU";
-                await saveSession(phoneNumber, session);
+    const amount = Number(text);
 
-                return res.send(`CON Back
-1. Check Balance
-2. Buy Airtime
-3. Buy Data
-4. Fund Wallet
-5. Transactions`);
-            }
+    if (!amount || amount <= 0) {
+        return res.send("CON Enter valid amount:");
+    }
 
-            const amount = Number(text);
+    if (user.balance < amount) {
+        return res.send("END ❌ Insufficient balance");
+    }
 
-            if (user.balance < amount) {
-                return res.send("END ❌ Insufficient balance");
-            }
+    user.balance -= amount;
+    await user.save();
 
-            user.balance -= amount;
-            await user.save();
+    session.state = "MAIN_MENU";
+    saveSession(normalizedPhone, session);
 
-            await airtimeQueue.add({
-                phone: phoneNumber,
-                amount
-            });
-
-            await Transaction.create({
-                phoneNumber,
-                type: "DEBIT",
-                amount,
-                description: "Airtime"
-            });
-
-            await sendSMS(phoneNumber, `₦${amount} airtime sent`);
-
-            session.state = "PIN";
-            await saveSession(phoneNumber, session);
-
-            return res.send("END ✅ Airtime processing...");
-        }
+    return res.send("END ✅ Airtime successful");
+}
 
         // DATA
         if (session.state === "DATA") {

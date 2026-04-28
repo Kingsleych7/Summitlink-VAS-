@@ -1,29 +1,34 @@
-const Session = require("../models/Session");
+const sessions = new Map();
 
-// GET SESSION
-async function getSession(phone) {
-    let session = await Session.findOne({ phone });
-
-    if (!session) {
-        session = await Session.create({
-            phone,
+/**
+ * Get session by phone number
+ */
+function getSession(phone) {
+    if (!sessions.has(phone)) {
+        sessions.set(phone, {
+            state: "PIN",
             data: {}
         });
     }
-
-    return session.data;
+    return sessions.get(phone);
 }
 
-// SAVE SESSION
-async function saveSession(phone, data) {
-    await Session.findOneAndUpdate(
-        { phone },
-        { data },
-        { upsert: true, new: true }
-    );
+/**
+ * Update session
+ */
+function saveSession(phone, session) {
+    sessions.set(phone, session);
+}
+
+/**
+ * Reset session
+ */
+function clearSession(phone) {
+    sessions.delete(phone);
 }
 
 module.exports = {
     getSession,
-    saveSession
+    saveSession,
+    clearSession
 };
