@@ -6,6 +6,14 @@ const ussdController = require("./src/ussd/ussdController");
 
 const app = express();
 
+const rateLimit = require("express-rate-limit");
+
+const ussdLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30
+});
+
+app.use("/ussd", ussdLimiter);
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
