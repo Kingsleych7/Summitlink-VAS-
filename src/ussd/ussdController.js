@@ -7,6 +7,12 @@ const sendSMS = require("../services/sms");
 const User = require("../models/User");
 const Transaction = require("../models/Transaction");
 const bcrypt = require("bcryptjs");
+const rateLimit = require("express-rate-limit");
+
+app.use("/ussd", rateLimit({
+  windowMs: 60 * 1000,
+  max: 30
+}));
 
 module.exports = async (req, res) => {
     try {
