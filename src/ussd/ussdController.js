@@ -49,15 +49,15 @@ if (text === "") {
         let user = await User.findOne({ phoneNumber });
 
         if (!user) {
-            user = await User.create({
-                phoneNumber,
-                email: phoneNumber + "@test.com",
-                balance: 1000,
-                const hashedPin = await bcrypt.hash("1234", 10);
+    const hashedPin = await bcrypt.hash("1234", 10);
 
-pin: hashedPin
-            });
-        }
+    user = await User.create({
+        phoneNumber: normalizedPhone,
+        email: normalizedPhone + "@test.com",
+        balance: 1000,
+        pin: hashedPin
+    });
+}
 
         // ======================
         // BACK NAVIGATION
