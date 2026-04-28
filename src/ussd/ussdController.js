@@ -11,7 +11,11 @@ module.exports = async (req, res) => {
     try {
         let { phoneNumber, text = "" } = req.body;
 
-        text = text.trim();
+        text = (text || "").trim();
+
+if (text === "") {
+    return res.send("CON Enter your 4-digit PIN:");
+}
 
         // ======================
         // LOAD SESSION
